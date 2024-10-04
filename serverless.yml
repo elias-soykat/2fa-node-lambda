@@ -8,7 +8,7 @@ service: two-factor-auth
 stages:
   default:
     params:
-      tableName: "users-table-${sls:stage}"
+      tableName: "TWO_FACTOR_AUTH"
 
 provider:
   name: aws
@@ -41,10 +41,10 @@ resources:
       Type: AWS::DynamoDB::Table
       Properties:
         AttributeDefinitions:
-          - AttributeName: userId
+          - AttributeName: secret
             AttributeType: S
         KeySchema:
-          - AttributeName: userId
+          - AttributeName: secret
             KeyType: HASH
         BillingMode: PAY_PER_REQUEST
         TableName: ${param:tableName}
