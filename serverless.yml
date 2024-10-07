@@ -41,10 +41,10 @@ resources:
       Type: AWS::DynamoDB::Table
       Properties:
         AttributeDefinitions:
-          - AttributeName: secret
+          - AttributeName: userEmail
             AttributeType: S
         KeySchema:
-          - AttributeName: secret
+          - AttributeName: userEmail
             KeyType: HASH
         BillingMode: PAY_PER_REQUEST
         TableName: ${param:tableName}

@@ -1,23 +1,53 @@
+const {
+  UpdateCommand,
+  DynamoDBDocumentClient,
+} = require("@aws-sdk/lib-dynamodb");
+const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
+
 const crypto = require("crypto");
+const client = new DynamoDBClient();
+const docClient = DynamoDBDocumentClient.from(client);
+
+const USERS_TABLE = process.env.USERS_TABLE;
 
 const generateBackupCodes = (count = 5) => {
   const codes = [];
   for (let i = 0; i < count; i++) {
-    codes.push(crypto.randomBytes(4).toString("hex").toUpperCase()); // 8-character backup codes
+    codes.push(crypto.randomBytes(3).toString("hex").toUpperCase());
   }
   return codes;
 };
 
-const checkBackupCode = (userId, code) => {
-  // Fetch backup codes from database for the user
-  const backupCodes = ["BACKUP1", "BACKUP2", "BACKUP3"]; // Example codes; replace with actual DB fetch logic
-
-  if (backupCodes.includes(code)) {
-    // Remove the used backup code from the database
-    return true; // Valid backup code
+const verifyAndRemoveBackupCode = async (user, token) => {
+  if (!user || !user.backupCodes || !user.userEmail) {
+    throw new Error("Invalid user data");
   }
 
-  return false; // Invalid backup code
+  // Check if the backup code has already been used
+  const isBackupCodeUsed = !user.backupCodes.includes(token);
+  if (isBackupCodeUsed) {
+    return true; // Already used
+  }
+
+  // Remove the used backup code
+  const updatedBackupCodes = user.backupCodes.filter((code) => code !== token);
+
+  try {
+    const updateParams = {
+      TableName: USERS_TABLE,
+      Key: { userEmail: user.userEmail },
+      UpdateExpression: "SET backupCodes = :newBackupCodes",
+      ExpressionAttributeValues: {
+        ":newBackupCodes": updatedBackupCodes,
+      },
+      ReturnValues: "UPDATED_NEW",
+    };
+
+    await docClient.send(new UpdateCommand(updateParams));
+    return false;
+  } catch (err) {
+    throw new Error("Error when updating backup codes");
+  }
 };
 
 const notFound = (req, res, next) => {
@@ -26,4 +56,8 @@ const notFound = (req, res, next) => {
   });
 };
 
-module.exports = { generateBackupCodes, checkBackupCode, notFound };
+module.exports = {
+  generateBackupCodes,
+  verifyAndRemoveBackupCode,
+  notFound,
+};
