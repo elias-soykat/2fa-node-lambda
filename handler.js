@@ -124,28 +124,5 @@ app.post("/api/verify-2fa-code", async (req, res) => {
   }
 });
 
-app.post("/api/remove-2fa-code", async (req, res) => {
-  const { userEmail } = req.body;
-
-  if (!userEmail) {
-    return res.status(400).json({ error: "Missing required fields" });
-  }
-
-  try {
-    const params = {
-      TableName: USERS_TABLE,
-      Key: {
-        userEmail: userEmail,
-      },
-    };
-
-    await docClient.send(new DeleteCommand(params));
-
-    return res.status(200).json({ message: "2fa removed" });
-  } catch (error) {
-    return res.status(500).json({ error: "Internal server error" });
-  }
-});
-
 app.use(notFound);
 exports.handler = serverless(app);
