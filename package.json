@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "dev": "serverless dev"
+    "dev": "serverless dev",
+    "deploy": "serverless deploy"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.585.0",
