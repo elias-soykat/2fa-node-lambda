@@ -27,9 +27,9 @@ const USERS_TABLE = process.env.USERS_TABLE;
 const client = new DynamoDBClient();
 const docClient = DynamoDBDocumentClient.from(client);
 
-app.get("/api/generate-2fa-code", async (req, res) => {
+app.post("/api/generate-2fa-code", async (req, res) => {
   try {
-    const userEmail = req.headers["x-user-email"];
+    const userEmail = req.body.email
     if (!userEmail) {
       return res.status(400).json({ error: "Missing required fields" });
     }
